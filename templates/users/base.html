@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Gird the Grid{% endblock %}</title>
+  <style>
+    body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: #f0f4f8; color: #1f2933; }
+    header { background: #1e3a5f; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+    header .logo { font-size: 20px; font-weight: 600; }
+    header a { color: #fff; margin-left: 16px; text-decoration: none; }
+    header a:hover { text-decoration: underline; }
+    main { max-width: 760px; margin: 32px auto; background: #fff; padding: 28px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    h1 { margin-top: 0; color: #1e3a5f; }
+    input, select { padding: 8px; margin: 4px 0 12px; width: 100%; box-sizing: border-box; border: 1px solid #c5ced8; border-radius: 6px; font-size: 15px; }
+    button { background: #2f80ed; color: #fff; border: 0; padding: 9px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #1c6ad8; }
+    button.danger { background: #d64545; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #e4e9ef; }
+    form.inline { display: inline; }
+    form.inline select { width: auto; margin: 0; }
+    .msg { background: #e6f4ea; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; }
+    .err { background: #fdecea; color: #b42318; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; }
+    .badge { background: #e8f0fe; color: #1c4fb5; padding: 3px 10px; border-radius: 12px; font-size: 13px; }
+    .errorlist { color: #b42318; padding-left: 18px; }
+    .off { color: #9aa5b1; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="logo">Gird the Grid</span>
+    <nav>
+      {% if user.is_authenticated %}
+        <span>{{ user.username }}</span>
+        <a href="{% url 'home' %}">Головна</a>
+        <a href="{% url 'logout' %}">Вийти</a>
+      {% else %}
+        <a href="{% url 'login' %}">Вхід</a>
+        <a href="{% url 'register' %}">Реєстрація</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{% extends "users/base.html" %}
+{% block title %}Головна{% endblock %}
+{% block content %}
+<h1>Вітаю, {{ user.username }}</h1>
+<p>Ваша роль: <span class="badge">{{ user.get_role }}</span></p>
+{% if user.role == "manager" %}
+  <p><a href="{% url 'manage_users' %}">→ Керування користувачами</a></p>
+{% else %}
+  <p>Керування користувачами доступне лише керівнику.</p>
+{% endif %}
+{% endblock %}

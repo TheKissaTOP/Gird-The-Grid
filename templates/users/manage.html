@@ -1,0 +1,47 @@
+{% extends "users/base.html" %}
+{% block title %}Керування користувачами{% endblock %}
+{% block content %}
+<h1>Керування користувачами</h1>
+{% if message %}<div class="msg">{{ message }}</div>{% endif %}
+<table>
+  <tr><th>Логін</th><th>Роль</th><th>Статус</th><th></th></tr>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.username }}{% if u.id == request.user.id %} (ви){% endif %}</td>
+    <td>
+      {% if u.id == request.user.id %}
+        <span class="badge">{{ u.role }}</span>
+      {% else %}
+        <form method="post" class="inline">
+          {% csrf_token %}
+          <input type="hidden" name="user_id" value="{{ u.id }}">
+          <input type="hidden" name="action" value="role">
+          <select name="role">
+            {% for value, label in roles %}
+              <option value="{{ value }}" {% if u.role == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit">Зберегти</button>
+        </form>
+      {% endif %}
+    </td>
+    <td>{% if u.is_active %}активний{% else %}<span class="off">вимкнений</span>{% endif %}</td>
+    <td>
+      {% if u.id != request.user.id %}
+        <form method="post" class="inline">
+          {% csrf_token %}
+          <input type="hidden" name="user_id" value="{{ u.id }}">
+          {% if u.is_active %}
+            <input type="hidden" name="action" value="deactivate">
+            <button type="submit" class="danger">Вимкнути</button>
+          {% else %}
+            <input type="hidden" name="action" value="activate">
+            <button type="submit">Увімкнути</button>
+          {% endif %}
+        </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
