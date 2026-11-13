@@ -1,0 +1,50 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{ item.name }}</h1>
+
+<p>Тип: {{ item.get_equipment_type_display }}</p>
+<p>Розташування: {{ item.location }}</p>
+<p>Серійний номер: {{ item.serial_number }}</p>
+<p>Стан: {{ item.get_status_display }}</p>
+
+<p>Мінімальна напруга: {{ item.min_voltage }} В</p>
+<p>Максимальна напруга: {{ item.max_voltage }} В</p>
+
+<a href="{% url 'monitoring:measurement_create' %}">
+    Додати вимірювання
+</a>
+
+<h2>Історія вимірювань</h2>
+
+<table border="1">
+    <tr>
+        <th>Дата</th>
+        <th>Напруга (В)</th>
+        <th>Струм (А)</th>
+        <th>Потужність (Вт)</th>
+        <th>Споживання (кВт·год)</th>
+    </tr>
+
+    {% for measurement in measurements %}
+    <tr>
+        <td>{{ measurement.measured_at }}</td>
+        <td>{{ measurement.voltage }}</td>
+        <td>{{ measurement.current }}</td>
+        <td>{{ measurement.power }}</td>
+        <td>{{ measurement.energy_consumption }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">Вимірювань поки що немає.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="{% url 'monitoring:equipment_list' %}">
+    Назад до списку
+</a>
+
+{% endblock %}

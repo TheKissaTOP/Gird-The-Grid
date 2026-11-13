@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Створення сповіщення</title>
+</head>
+<body>
+    <h1>Створити аварійне сповіщення</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit">Створити</button>
+    </form>
+
+    <a href="{% url 'alerts:alerts_list' %}">
+        Повернутися до списку
+    </a>
+</body>
+</html>

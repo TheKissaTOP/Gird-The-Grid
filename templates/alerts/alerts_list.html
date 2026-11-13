@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Аварійні сповіщення</title>
+</head>
+<body>
+    <h1>Аварійні сповіщення</h1>
+
+    <a href="{% url 'alerts:alert_create' %}">
+        Створити сповіщення
+    </a>
+
+    {% for alert in alerts %}
+        <div>
+            <h3>{{ alert.title }}</h3>
+
+            <p>{{ alert.description }}</p>
+            <p>Обладнання: {{ alert.equipment.name }}</p>
+            <p>Рівень: {{ alert.get_severity_display }}</p>
+            <p>Статус: {{ alert.get_status_display }}</p>
+            <p>Дата: {{ alert.created_at }}</p>
+
+            {% if alert.status == "open" %}
+                <a href="{% url 'alerts:alert_resolve' alert.id %}">
+                    Позначити як вирішене
+                </a>
+            {% else %}
+                <a href="{% url 'alerts:alert_reopen' alert.id %}">
+                    Відкрити повторно
+                </a>
+            {% endif %}
+        </div>
+        <hr>
+    {% empty %}
+        <p>Аварійних сповіщень поки немає.</p>
+    {% endfor %}
+</body>
+</html>
