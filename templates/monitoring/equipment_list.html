@@ -1,0 +1,41 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Моніторинг обладнання</h1>
+
+<a href="{% url 'monitoring:equipment_create' %}">
+    Додати обладнання
+</a>
+
+<a href="{% url 'monitoring:measurement_create' %}">
+    Додати вимірювання
+</a>
+
+<hr>
+
+{% for item in equipment %}
+
+<div>
+    <h3>
+        <a href="{% url 'monitoring:equipment_detail' item.pk %}">
+            {{ item.name }}
+        </a>
+    </h3>
+
+    <p>Тип: {{ item.get_equipment_type_display }}</p>
+    <p>Розташування: {{ item.location }}</p>
+    <p>Серійний номер: {{ item.serial_number }}</p>
+    <p>Стан: {{ item.get_status_display }}</p>
+</div>
+
+<hr>
+
+{% empty %}
+
+<p>Обладнання поки що відсутнє.</p>
+
+{% endfor %}
+
+{% endblock %}
