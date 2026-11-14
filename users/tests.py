@@ -1,32 +1,35 @@
 from django.test import TestCase
 
 from .models import User
-from .services import can, change_role, deactivate_user, process
+from .permissions import can
+from .services import UserService
+
+service = UserService()
 
 
 class RegistrationTests(TestCase):
     def test_success(self):
-        user = process("anna", "password123", "analyst")
+        user = service.register_user("anna", "password123", "analyst")
         self.assertIsNotNone(user)
         self.assertEqual(user.role, "analyst")
 
     def test_password_is_hashed(self):
-        user = process("anna", "password123", "analyst")
+        user = service.register_user("anna", "password123", "analyst")
         self.assertNotEqual(user.password, "password123")
         self.assertTrue(user.check_password("password123"))
 
     def test_empty_username(self):
-        self.assertIsNone(process("", "password123", "analyst"))
+        self.assertIsNone(service.register_user("", "password123", "analyst"))
 
     def test_short_password(self):
-        self.assertIsNone(process("anna", "123", "analyst"))
+        self.assertIsNone(service.register_user("anna", "123", "analyst"))
 
     def test_unknown_role(self):
-        self.assertIsNone(process("anna", "password123", "boss"))
+        self.assertIsNone(service.register_user("anna", "password123", "boss"))
 
     def test_duplicate_username(self):
-        process("anna", "password123", "analyst")
-        self.assertIsNone(process("anna", "password123", "analyst"))
+        service.register_user("anna", "password123", "analyst")
+        self.assertIsNone(service.register_user("anna", "password123", "analyst"))
 
 
 class AccessTests(TestCase):
@@ -54,17 +57,25 @@ class AccessTests(TestCase):
 
 class ManagementTests(TestCase):
     def test_change_role(self):
-        user = process("anna", "password123", "analyst")
-        change_role(user.id, "executor")
+        user = service.register_user("anna", "password123", "analyst")
+        service.update_user_role(user.id, "executor")
         user.refresh_from_db()
         self.assertEqual(user.role, "executor")
 
     def test_change_role_unknown(self):
-        user = process("anna", "password123", "analyst")
-        self.assertIsNone(change_role(user.id, "boss"))
+        user = service.register_user("anna", "password123", "analyst")
+        self.assertIsNone(service.update_user_role(user.id, "boss"))
 
     def test_deactivate(self):
-        user = process("anna", "password123", "analyst")
-        deactivate_user(user.id)
+        user = service.register_user("anna", "password123", "analyst")
+        service.deactivate_user(user.id)
         user.refresh_from_db()
         self.assertFalse(user.is_active)
+
+
+class FindTests(TestCase):
+    def test_get_user_by_email(self):
+        user = service.register_user("anna", "password123", "analyst")
+        user.email = "anna@example.com"
+        user.save()
+        self.assertEqual(service.get_user_by_email("ANNA@example.com"), user)

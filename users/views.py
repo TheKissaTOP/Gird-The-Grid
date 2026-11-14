@@ -4,13 +4,17 @@ from django.shortcuts import redirect, render
 
 from .forms import RegisterForm
 from .models import User
-from .services import activate_user, can, change_role, deactivate_user, process
+from .permissions import can
+from .roles import Role
+from .services import UserService
+
+service = UserService()
 
 ROLES = [
-    ("manager", "Керівник"),
-    ("generator", "Генератор"),
-    ("executor", "Виконавець"),
-    ("analyst", "Аналітик"),
+    (Role.MANAGER, "Керівник"),
+    (Role.GENERATOR, "Генератор"),
+    (Role.EXECUTOR, "Виконавець"),
+    (Role.ANALYST, "Аналітик"),
 ]
 
 
@@ -19,7 +23,7 @@ def register_view(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             d = form.cleaned_data
-            user = process(d["username"], d["password"], "analyst")
+            user = service.register_user(d["username"], d["password"], Role.ANALYST)
             if user is None:
                 form.add_error(None, "Не вдалося зареєструвати: логін зайнятий або пароль закороткий")
             else:
@@ -66,13 +70,13 @@ def manage_users_view(request):
         if target_id == request.user.id:
             message = "Не можна змінювати власний акаунт"
         elif action == "role":
-            change_role(target_id, request.POST["role"])
+            service.update_user_role(target_id, request.POST["role"])
             message = "Роль змінено"
         elif action == "deactivate":
-            deactivate_user(target_id)
+            service.deactivate_user(target_id)
             message = "Акаунт вимкнено"
         elif action == "activate":
-            activate_user(target_id)
+            service.activate_user(target_id)
             message = "Акаунт увімкнено"
 
     context = {"users": User.objects.order_by("username"), "roles": ROLES, "message": message}
