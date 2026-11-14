@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Gird the Grid — Аналітика{% endblock %}</title>
+  <style>
+    body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: #f0f4f8; color: #1f2933; }
+    header { background: #1e3a5f; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+    header .logo { font-size: 20px; font-weight: 600; color: #fff; text-decoration: none; margin: 0; }
+    header nav { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+    header nav a { color: #fff; text-decoration: none; font-size: 15px; }
+    header nav a:hover { text-decoration: underline; }
+    header nav span.user-label { color: #cbd5e1; font-size: 14px; }
+    main { max-width: 960px; margin: 32px auto; background: #fff; padding: 28px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    h1 { margin-top: 0; color: #1e3a5f; font-size: 26px; }
+    h2 { color: #1e3a5f; font-size: 19px; margin-top: 26px; margin-bottom: 12px; }
+    h3 { color: #334e68; font-size: 16px; margin-top: 18px; margin-bottom: 10px; }
+    label { display: block; font-weight: 500; margin-bottom: 4px; color: #334e68; }
+    input, select { padding: 8px 10px; margin: 4px 0 12px; width: 100%; box-sizing: border-box; border: 1px solid #c5ced8; border-radius: 6px; font-size: 15px; }
+    button, .btn { display: inline-block; background: #2f80ed; color: #fff; border: 0; padding: 9px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; text-decoration: none; }
+    button:hover, .btn:hover { background: #1c6ad8; }
+    .btn-secondary { background: #e8f0fe; color: #1c4fb5; font-weight: 500; }
+    .btn-secondary:hover { background: #d2e3fc; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #e4e9ef; }
+    th { color: #1f2933; font-weight: 600; }
+    .msg { background: #e6f4ea; color: #137333; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; }
+    .warn { background: #fef7e0; color: #b06000; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; }
+    .err { background: #fdecea; color: #b42318; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; }
+    .badge { display: inline-block; background: #e8f0fe; color: #1c4fb5; padding: 3px 10px; border-radius: 12px; font-size: 13px; font-weight: 500; }
+    .badge-ok { background: #e6f4ea; color: #137333; }
+    .badge-warn { background: #fef7e0; color: #b06000; }
+    .badge-crit { background: #fdecea; color: #b42318; }
+    .badge-off { background: #f1f5f9; color: #64748b; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 16px 0 22px; }
+    .kpi-card { background: #f8fafc; border: 1px solid #e4e9ef; border-radius: 8px; padding: 16px; }
+    .kpi-card .kpi-label { font-size: 13px; color: #627d98; margin-bottom: 6px; }
+    .kpi-card .kpi-value { font-size: 22px; font-weight: 700; color: #1e3a5f; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+    .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .errorlist { color: #b42318; padding-left: 18px; margin: 4px 0 12px; }
+    .divider { border: 0; border-top: 1px solid #e4e9ef; margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="{% url 'analytics:dashboard' %}" class="logo">Gird the Grid</a>
+    <nav>
+      <a href="{% url 'analytics:dashboard' %}">Аналітика</a>
+      <a href="{% url 'analytics:report_list' %}">Звіти</a>
+      <a href="{% url 'monitoring:equipment_list' %}">Моніторинг</a>
+      <a href="{% url 'alerts:alerts_list' %}">Сповіщення</a>
+      {% if user.is_authenticated %}
+        <span class="user-label">{{ user.username }}</span>
+        <a href="{% url 'home' %}">Головна</a>
+        <a href="{% url 'logout' %}">Вийти</a>
+      {% else %}
+        <a href="{% url 'login' %}">Вхід</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

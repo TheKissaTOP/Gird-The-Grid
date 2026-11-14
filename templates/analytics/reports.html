@@ -1,0 +1,43 @@
+{% extends "analytics/base.html" %}
+{% block title %}Аналітичні звіти{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+  <h1>Аналітичні звіти</h1>
+  <a href="{% url 'analytics:dashboard' %}" class="btn btn-secondary">← Назад до дашборду</a>
+</div>
+
+<h2>Сформувати новий звіт</h2>
+<form method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Згенерувати звіт</button>
+</form>
+
+<hr class="divider">
+
+<h2>Історія сформованих звітів</h2>
+<table>
+  <tr>
+    <th>Назва звіту</th>
+    <th>Період</th>
+    <th>Дата створення</th>
+    <th>Дії</th>
+  </tr>
+  {% for report in reports %}
+  <tr>
+    <td><strong>{{ report.title }}</strong></td>
+    <td>{{ report.period_start }} — {{ report.period_end }}</td>
+    <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
+    <td class="actions">
+      <a href="{% url 'analytics:report_detail' report.pk %}" class="btn">Переглянути</a>
+      <a href="{% url 'analytics:report_export_csv' report.pk %}" class="btn btn-secondary">CSV</a>
+    </td>
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="4">Звітів поки що немає.</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
