@@ -1,0 +1,71 @@
+{% extends "analytics/base.html" %}
+{% block title %}{{ report.title }}{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+  <h1>{{ report.title }}</h1>
+  <div class="actions">
+    <a href="{% url 'analytics:report_export_csv' report.pk %}" class="btn">Завантажити у CSV</a>
+    <a href="{% url 'analytics:report_list' %}" class="btn btn-secondary">← До списку звітів</a>
+  </div>
+</div>
+
+<p>
+  Період аналізу: <span class="badge">{{ report.period_start }} — {{ report.period_end }}</span>
+  &nbsp;|&nbsp; Дата формування: <strong>{{ report.created_at|date:"Y-m-d H:i" }}</strong>
+</p>
+
+<h2>Зведені енергетичні показники</h2>
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Середня напруга</div>
+    <div class="kpi-value">{{ report_data.average_voltage }} В</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Споживання за період</div>
+    <div class="kpi-value">{{ report_data.total_consumption }} кВт·год</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Денне споживання</div>
+    <div class="kpi-value">{{ report_data.consumption_details.daily_consumption_kwh }} кВт·год</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Місячне споживання</div>
+    <div class="kpi-value">{{ report_data.consumption_details.monthly_consumption_kwh }} кВт·год</div>
+  </div>
+</div>
+
+<h2>Статистика обладнання</h2>
+<table>
+  <tr>
+    <th>Усього</th>
+    <th>Нормальний</th>
+    <th>Попередження</th>
+    <th>Критичний</th>
+    <th>Не працює</th>
+  </tr>
+  <tr>
+    <td><strong>{{ report_data.equipment_statistics.total_equipment }}</strong></td>
+    <td><span class="badge badge-ok">{{ report_data.equipment_statistics.by_status.normal }}</span></td>
+    <td><span class="badge badge-warn">{{ report_data.equipment_statistics.by_status.warning }}</span></td>
+    <td><span class="badge badge-crit">{{ report_data.equipment_statistics.by_status.critical }}</span></td>
+    <td><span class="badge badge-off">{{ report_data.equipment_statistics.by_status.offline }}</span></td>
+  </tr>
+</table>
+
+<h2>Статистика аварійних інцидентів</h2>
+<table>
+  <tr>
+    <th>Усього інцидентів</th>
+    <th>Відкритих</th>
+    <th>Вирішених</th>
+    <th>Середній час вирішення</th>
+  </tr>
+  <tr>
+    <td><strong>{{ report_data.alert_statistics.total_alerts }}</strong></td>
+    <td>{{ report_data.alert_statistics.open_alerts }}</td>
+    <td>{{ report_data.alert_statistics.resolved_alerts }}</td>
+    <td><span class="badge">{{ report_data.alert_statistics.avg_resolution_minutes }} хв</span></td>
+  </tr>
+</table>
+{% endblock %}

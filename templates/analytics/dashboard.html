@@ -1,0 +1,136 @@
+{% extends "analytics/base.html" %}
+{% block title %}Аналітика мережі{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+  <h1>Аналітика електричної мережі</h1>
+  <div class="actions">
+    <form method="POST" style="margin: 0;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="seed_demo">
+      <button type="submit" class="btn-secondary">Згенерувати демо-дані</button>
+    </form>
+    <a href="{% url 'analytics:report_list' %}" class="btn">Звіти</a>
+  </div>
+</div>
+
+{% if not has_data %}
+<div class="warn">
+  У базі ще немає вимірювань. Натисніть <strong>«Згенерувати демо-дані»</strong>, щоб наповнити БД тестовими записами.
+</div>
+{% endif %}
+
+<h2>1. Загальні показники мережі</h2>
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Середня напруга</div>
+    <div class="kpi-value">{{ average_voltage }} В</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Загальне споживання</div>
+    <div class="kpi-value">{{ total_consumption }} кВт·год</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Споживання за сьогодні</div>
+    <div class="kpi-value">{{ daily_consumption }} кВт·год</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Споживання за місяць</div>
+    <div class="kpi-value">{{ monthly_consumption }} кВт·год</div>
+  </div>
+</div>
+
+<h3>Порівняння споживання (останні 7 днів vs попередні 7 днів)</h3>
+<table>
+  <tr>
+    <th>Поточний тиждень</th>
+    <th>Попередній тиждень</th>
+    <th>Різниця</th>
+    <th>Динаміка</th>
+  </tr>
+  <tr>
+    <td>{{ period_comparison.current_kwh }} кВт·год</td>
+    <td>{{ period_comparison.previous_kwh }} кВт·год</td>
+    <td>{{ period_comparison.difference_kwh }} кВт·год</td>
+    <td><span class="badge">{{ period_comparison.change_percent }}%</span></td>
+  </tr>
+</table>
+
+<hr class="divider">
+
+<h2>2. Аналіз стану обладнання</h2>
+<p>Усього одиниць обладнання: <span class="badge">{{ equipment_stats.total_equipment }}</span></p>
+<table>
+  <tr>
+    <th>Нормальний</th>
+    <th>Попередження</th>
+    <th>Критичний</th>
+    <th>Не працює</th>
+  </tr>
+  <tr>
+    <td><span class="badge badge-ok">{{ equipment_stats.by_status.normal }}</span></td>
+    <td><span class="badge badge-warn">{{ equipment_stats.by_status.warning }}</span></td>
+    <td><span class="badge badge-crit">{{ equipment_stats.by_status.critical }}</span></td>
+    <td><span class="badge badge-off">{{ equipment_stats.by_status.offline }}</span></td>
+  </tr>
+</table>
+
+<h3>Обладнання у критичному стані</h3>
+{% if critical_equipment %}
+<table>
+  <tr>
+    <th>Назва</th>
+    <th>Розташування</th>
+    <th>Серійний номер</th>
+    <th>Статус</th>
+  </tr>
+  {% for eq in critical_equipment %}
+  <tr>
+    <td>{{ eq.name }}</td>
+    <td>{{ eq.location }}</td>
+    <td>{{ eq.serial_number }}</td>
+    <td><span class="badge badge-crit">{{ eq.get_status_display }}</span></td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<div class="msg">Обладнання у критичному стані відсутнє.</div>
+{% endif %}
+
+<hr class="divider">
+
+<h2>3. Аналіз аварійних ситуацій</h2>
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Усього інцидентів</div>
+    <div class="kpi-value">{{ alert_stats.total_alerts }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Відкритих</div>
+    <div class="kpi-value">{{ alert_stats.open_alerts }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Вирішених</div>
+    <div class="kpi-value">{{ alert_stats.resolved_alerts }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Середній час вирішення</div>
+    <div class="kpi-value">{{ alert_stats.avg_resolution_minutes }} хв</div>
+  </div>
+</div>
+
+<table>
+  <tr>
+    <th>Низький (low)</th>
+    <th>Середній (medium)</th>
+    <th>Високий (high)</th>
+    <th>Критичний (critical)</th>
+  </tr>
+  <tr>
+    <td><span class="badge">{{ alert_stats.by_severity.low }}</span></td>
+    <td><span class="badge badge-warn">{{ alert_stats.by_severity.medium }}</span></td>
+    <td><span class="badge badge-warn">{{ alert_stats.by_severity.high }}</span></td>
+    <td><span class="badge badge-crit">{{ alert_stats.by_severity.critical }}</span></td>
+  </tr>
+</table>
+{% endblock %}
