@@ -125,3 +125,94 @@ class AnalyticsModuleTest(TestCase):
 
         resp_detail = self.client.get(reverse("analytics:report_detail", args=[report.pk]))
         self.assertEqual(resp_detail.status_code, 200)
+
+class AnalyticsWhiteBoxAdditionalTests(TestCase):
+    def setUp(self):
+        self.equipment = Equipment.objects.create(
+            name="Тестове обладнання",
+            location="Тестова локація",
+            equipment_type="other",
+            serial_number="AN-WB-01",
+        )
+
+    def test_empty_database_returns_zero_metrics(self):
+        service = AnalyticsService()
+        self.assertEqual(service.calculate_average_voltage(), 0.0)
+        self.assertEqual(service.calculate_total_consumption(), 0.0)
+        self.assertEqual(service.equipment_analyzer.find_critical_equipment().count(), 0)
+        self.assertEqual(service.alert_analyzer.calculate_resolution_time(), 0.0)
+
+    def test_consumption_comparison_when_previous_period_is_zero(self):
+        today = timezone.now().date()
+        Measurement.objects.create(
+            equipment=self.equipment,
+            voltage=Decimal("220.00"),
+            current=Decimal("5.00"),
+            power=Decimal("1100.00"),
+            energy_consumption=Decimal("15.00"),
+        )
+        result = ConsumptionAnalyzer().compare_consumption(
+            current_start=today,
+            current_end=today,
+            previous_start=today - timedelta(days=2),
+            previous_end=today - timedelta(days=1),
+        )
+        self.assertEqual(result["current_kwh"], 15.0)
+        self.assertEqual(result["previous_kwh"], 0.0)
+        self.assertEqual(result["change_percent"], 100.0)
+
+    def test_consumption_comparison_when_both_periods_are_zero(self):
+        today = timezone.now().date()
+        result = ConsumptionAnalyzer().compare_consumption(
+            current_start=today,
+            current_end=today,
+            previous_start=today - timedelta(days=2),
+            previous_end=today - timedelta(days=1),
+        )
+        self.assertEqual(result["change_percent"], 0.0)
+
+    def test_equipment_statistics_count_each_status(self):
+        Equipment.objects.create(
+            name="Критичне обладнання", location="Локація", equipment_type="other",
+            serial_number="AN-WB-02", status="critical",
+        )
+        Equipment.objects.create(
+            name="Вимкнене обладнання", location="Локація", equipment_type="other",
+            serial_number="AN-WB-03", status="offline",
+        )
+        counts = EquipmentAnalyzer().count_by_status()
+        self.assertEqual(counts["normal"], 1)
+        self.assertEqual(counts["critical"], 1)
+        self.assertEqual(counts["offline"], 1)
+        self.assertEqual(counts["warning"], 0)
+
+    def test_alert_analyzer_ignores_unresolved_alerts_for_resolution_time(self):
+        Alert.objects.create(
+            title="Відкритий інцидент", description="Тест", equipment=self.equipment,
+            status="open",
+        )
+        self.assertEqual(AlertAnalyzer().calculate_resolution_time(), 0.0)
+
+    def test_report_returns_existing_data_without_regeneration(self):
+        today = timezone.now().date()
+        report = Report.objects.create(
+            title="Збережений звіт", period_start=today, period_end=today,
+            data={"custom_value": 42},
+        )
+        self.assertEqual(report.get_report_data(), {"custom_value": 42})
+
+    def test_report_form_rejects_reversed_dates(self):
+        from .forms import ReportForm
+
+        today = timezone.now().date()
+        form = ReportForm(data={
+            "title": "Некоректний звіт",
+            "period_start": today,
+            "period_end": today - timedelta(days=1),
+        })
+        self.assertFalse(form.is_valid())
+
+    def test_analytics_dashboard_requires_login(self):
+        response = self.client.get(reverse("analytics:dashboard"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/users/login/", response.url)

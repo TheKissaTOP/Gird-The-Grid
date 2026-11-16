@@ -1,40 +1,7 @@
-
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Аварійні сповіщення</title>
-</head>
-<body>
-    <h1>Аварійні сповіщення</h1>
-
-    <a href="{% url 'alerts:alert_create' %}">
-        Створити сповіщення
-    </a>
-
-    {% for alert in alerts %}
-        <div>
-            <h3>{{ alert.title }}</h3>
-
-            <p>{{ alert.description }}</p>
-            <p>Обладнання: {{ alert.equipment.name }}</p>
-            <p>Рівень: {{ alert.get_severity_display }}</p>
-            <p>Статус: {{ alert.get_status_display }}</p>
-            <p>Дата: {{ alert.created_at }}</p>
-
-            {% if alert.status == "open" %}
-                <a href="{% url 'alerts:alert_resolve' alert.id %}">
-                    Позначити як вирішене
-                </a>
-            {% else %}
-                <a href="{% url 'alerts:alert_reopen' alert.id %}">
-                    Відкрити повторно
-                </a>
-            {% endif %}
-        </div>
-        <hr>
-    {% empty %}
-        <p>Аварійних сповіщень поки немає.</p>
-    {% endfor %}
-</body>
-</html>
+{% extends "base.html" %}{% block title %}Інциденти — Grid the Grid{% endblock %}{% block content %}
+<div class="page-head"><div><h1>Аварійні інциденти</h1><p class="sub">Журнал подій та контроль усунення проблем.</p></div>{% if can_create %}<a class="btn" href="{% url 'alerts:alert_create' %}">＋ Створити інцидент</a>{% endif %}</div>
+<div class="card"><div class="toolbar"><strong>Усі інциденти</strong><span class="badge">{{ alerts|length }} запис(ів)</span></div>
+<div class="table-wrap"><table><thead><tr><th>Інцидент</th><th>Обладнання</th><th>Рівень</th><th>Статус</th><th>Створено</th><th>Дія</th></tr></thead><tbody>
+{% for alert in alerts %}<tr><td><strong>{{ alert.title }}</strong><br><span class="muted">{{ alert.description|truncatechars:90 }}</span></td><td><a href="{% url 'monitoring:equipment_detail' alert.equipment_id %}">{{ alert.equipment.name }}</a></td><td><span class="badge {% if alert.severity == 'critical' or alert.severity == 'high' %}badge-crit{% elif alert.severity == 'medium' %}badge-warn{% endif %}">{{ alert.get_severity_display }}</span></td><td><span class="badge {% if alert.status == 'resolved' %}badge-ok{% else %}badge-warn{% endif %}">{{ alert.get_status_display }}</span></td><td>{{ alert.created_at|date:"d.m.Y H:i" }}</td><td>{% if can_change_status %}<form method="post" action="{% url 'alerts:alert_resolve' alert.pk %}" class="inline">{% csrf_token %}{% if alert.status == 'open' %}<button class="small" type="submit">Вирішити</button>{% else %}<button class="small secondary" type="submit" formaction="{% url 'alerts:alert_reopen' alert.pk %}">Відкрити знову</button>{% endif %}</form>{% else %}—{% endif %}</td></tr>
+{% empty %}<tr><td colspan="6" class="empty">Інцидентів поки немає. Нові події з’являться тут.</td></tr>{% endfor %}
+</tbody></table></div></div>{% endblock %}

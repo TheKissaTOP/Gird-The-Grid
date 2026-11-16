@@ -1,50 +1,5 @@
-
-{% extends "base.html" %}
-
-{% block content %}
-
-<h1>{{ item.name }}</h1>
-
-<p>Тип: {{ item.get_equipment_type_display }}</p>
-<p>Розташування: {{ item.location }}</p>
-<p>Серійний номер: {{ item.serial_number }}</p>
-<p>Стан: {{ item.get_status_display }}</p>
-
-<p>Мінімальна напруга: {{ item.min_voltage }} В</p>
-<p>Максимальна напруга: {{ item.max_voltage }} В</p>
-
-<a href="{% url 'monitoring:measurement_create' %}">
-    Додати вимірювання
-</a>
-
-<h2>Історія вимірювань</h2>
-
-<table border="1">
-    <tr>
-        <th>Дата</th>
-        <th>Напруга (В)</th>
-        <th>Струм (А)</th>
-        <th>Потужність (Вт)</th>
-        <th>Споживання (кВт·год)</th>
-    </tr>
-
-    {% for measurement in measurements %}
-    <tr>
-        <td>{{ measurement.measured_at }}</td>
-        <td>{{ measurement.voltage }}</td>
-        <td>{{ measurement.current }}</td>
-        <td>{{ measurement.power }}</td>
-        <td>{{ measurement.energy_consumption }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="5">Вимірювань поки що немає.</td>
-    </tr>
-    {% endfor %}
-</table>
-
-<a href="{% url 'monitoring:equipment_list' %}">
-    Назад до списку
-</a>
-
-{% endblock %}
+{% extends "base.html" %}{% block title %}{{ item.name }}{% endblock %}{% block content %}
+<div class="page-head"><div><h1>{{ item.name }}</h1><p class="sub">{{ item.get_equipment_type_display }} · {{ item.location }}</p></div><a class="btn secondary" href="{% url 'monitoring:equipment_list' %}">← До обладнання</a></div>
+<div class="grid"><div class="kpi"><div class="kpi-label">Поточний стан</div><div class="kpi-value"><span class="badge {% if item.status == 'normal' %}badge-ok{% elif item.status == 'warning' %}badge-warn{% elif item.status == 'critical' %}badge-crit{% else %}badge-off{% endif %}">{{ item.get_status_display }}</span></div></div><div class="kpi"><div class="kpi-label">Серійний номер</div><div class="kpi-value" style="font-size:20px">{{ item.serial_number }}</div></div><div class="kpi"><div class="kpi-label">Допустима напруга</div><div class="kpi-value" style="font-size:20px">{{ item.min_voltage }}–{{ item.max_voltage }} В</div></div></div>
+<div class="toolbar" style="margin-top:28px"><h2 style="margin:0">Історія вимірювань</h2>{% if can_edit %}<a class="btn" href="{% url 'monitoring:measurement_create' %}">＋ Додати вимірювання</a>{% endif %}</div>
+<div class="card"><div class="table-wrap"><table><thead><tr><th>Дата</th><th>Напруга, В</th><th>Струм, А</th><th>Потужність, Вт</th><th>Споживання, кВт·год</th></tr></thead><tbody>{% for m in measurements %}<tr><td>{{ m.measured_at|date:"d.m.Y H:i" }}</td><td>{{ m.voltage }}</td><td>{{ m.current }}</td><td>{{ m.power }}</td><td>{{ m.energy_consumption }}</td></tr>{% empty %}<tr><td colspan="5" class="empty">Вимірювань ще немає.</td></tr>{% endfor %}</tbody></table></div></div>{% endblock %}

@@ -1,24 +1,20 @@
-
 from django.db import models
 from django.utils import timezone
 from monitoring.models import Equipment
 
 
 class BaseAlert(models.Model):
-    SEVERITY_CHOICES = [
-        ("low", "Низький"),
-        ("medium", "Середній"),
-        ("high", "Високий"),
-        ("critical", "Критичний"),
-    ]
+    """Базова абстрактна модель аварійного сповіщення."""
+
+    class Severity(models.TextChoices):
+        LOW = "low", "Низький"
+        MEDIUM = "medium", "Середній"
+        HIGH = "high", "Високий"
+        CRITICAL = "critical", "Критичний"
 
     title = models.CharField(max_length=150)
     description = models.TextField()
-    severity = models.CharField(
-        max_length=10,
-        choices=SEVERITY_CHOICES,
-        default="medium"
-    )
+    severity = models.CharField(max_length=10, choices=Severity.choices, default=Severity.MEDIUM)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -26,37 +22,31 @@ class BaseAlert(models.Model):
 
 
 class Alert(BaseAlert):
-    STATUS_CHOICES = [
-        ("open", "Відкрито"),
-        ("resolved", "Вирішено"),
-    ]
+    """Модель аварійного інциденту, пов'язаного з обладнанням."""
 
-    equipment = models.ForeignKey(
-        Equipment,
-        on_delete=models.CASCADE,
-        related_name="alerts"
-    )
+    class Status(models.TextChoices):
+        OPEN = "open", "Відкрито"
+        RESOLVED = "resolved", "Вирішено"
 
-    status = models.CharField(
-        max_length=10,
-        choices=STATUS_CHOICES,
-        default="open"
-    )
-
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name="alerts")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
     resolved_at = models.DateTimeField(null=True, blank=True)
 
+    def _change_status(self, status, resolved_at=None):
+        self.status = status
+        self.resolved_at = resolved_at
+        self.save(update_fields=["status", "resolved_at"])
+
     def resolve(self):
-        self.status = "resolved"
-        self.resolved_at = timezone.now()
-        self.save()
+        """Позначає інцидент як вирішений."""
+        self._change_status(self.Status.RESOLVED, timezone.now())
 
     def reopen(self):
-        self.status = "open"
-        self.resolved_at = None
-        self.save()
+        """Повторно відкриває раніше вирішений інцидент."""
+        self._change_status(self.Status.OPEN)
 
     def is_resolved(self):
-        return self.status == "resolved"
+        return self.status == self.Status.RESOLVED
 
     def __str__(self):
         return self.title

@@ -1,11 +1,17 @@
 {% extends "users/base.html" %}
-{% block title %}Головна{% endblock %}
-{% block content %}
-<h1>Вітаю, {{ user.username }}</h1>
-<p>Ваша роль: <span class="badge">{{ user.get_role }}</span></p>
-{% if user.role == "manager" %}
-  <p><a href="{% url 'manage_users' %}">→ Керування користувачами</a></p>
-{% else %}
-  <p>Керування користувачами доступне лише керівнику.</p>
-{% endif %}
+{% block title %}Огляд системи — Grid the Grid{% endblock %}
+{% block user_content %}
+<div class="page-head"><div><h1>Огляд системи</h1><p class="sub">Вітаємо, {{ user.username }}. Стан електричної мережі в одному місці.</p></div><span class="badge">{{ role_label }}</span></div>
+<div class="grid">
+<div class="kpi"><div class="kpi-label">Одиниць обладнання</div><div class="kpi-value">{{ equipment_count }}</div><div class="kpi-note">Зареєстровано в системі</div></div>
+<div class="kpi"><div class="kpi-label">Відкриті інциденти</div><div class="kpi-value">{{ open_alerts }}</div><div class="kpi-note">Потребують уваги</div></div>
+<div class="kpi"><div class="kpi-label">Вимірювання</div><div class="kpi-value">{{ measurement_count }}</div><div class="kpi-note">Збережено в системі</div></div>
+<div class="kpi"><div class="kpi-label">Критичне обладнання</div><div class="kpi-value">{{ critical_count }}</div><div class="kpi-note">Поза допустимим режимом</div></div>
+</div>
+<h2>Робочі розділи</h2><div class="grid">
+<div class="quick-card"><div class="quick-icon">▦</div><div><h3>Моніторинг обладнання</h3><p>Перегляд обладнання, його параметрів та історії вимірювань.</p><a href="{% url 'monitoring:equipment_list' %}" class="btn">Відкрити моніторинг →</a></div></div>
+<div class="quick-card"><div class="quick-icon">⚑</div><div><h3>Аварійні інциденти</h3><p>Створення сповіщень та контроль їх опрацювання.</p><a href="{% url 'alerts:alerts_list' %}" class="btn">Перейти до інцидентів →</a></div></div>
+{% if user.role == 'manager' or user.role == 'analyst' %}<div class="quick-card"><div class="quick-icon">▥</div><div><h3>Аналітика</h3><p>Показники споживання, стан обладнання та статистика інцидентів.</p><a href="{% url 'analytics:dashboard' %}" class="btn">Відкрити аналітику →</a></div></div><div class="quick-card"><div class="quick-icon">▤</div><div><h3>Звіти</h3><p>Формування звітів за період та експорт результатів у CSV.</p><a href="{% url 'analytics:report_list' %}" class="btn secondary">Переглянути звіти →</a></div></div>{% endif %}
+{% if user.role == 'manager' %}<div class="quick-card"><div class="quick-icon">♙</div><div><h3>Керування користувачами</h3><p>Призначення ролей та активація облікових записів.</p><a href="{% url 'manage_users' %}" class="btn secondary">Керувати →</a></div></div>{% endif %}
+</div>
 {% endblock %}

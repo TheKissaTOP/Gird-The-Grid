@@ -1,12 +1,2 @@
-{% extends "users/base.html" %}
-{% block title %}Реєстрація{% endblock %}
-{% block content %}
-<h1>Реєстрація</h1>
-<p>Нові користувачі отримують роль «Аналітик». Іншу роль призначає керівник.</p>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Зареєструватися</button>
-</form>
-<p>Вже є акаунт? <a href="{% url 'login' %}">Увійти</a></p>
-{% endblock %}
+{% extends "users/base.html" %}{% block title %}Реєстрація — Grid the Grid{% endblock %}{% block user_content %}
+<div class="auth-wrap"><div class="card"><h1>Створити акаунт</h1><p class="sub" style="margin-bottom:20px">Реєстрація нового користувача системи.</p><form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit" style="width:100%">Зареєструватися</button></form><p class="muted" style="margin:18px 0 0;text-align:center">Вже маєте акаунт? <a href="{% url 'login' %}">Увійти</a></p></div></div>{% endblock %}
